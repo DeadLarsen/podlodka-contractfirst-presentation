@@ -7,18 +7,8 @@
     <link rel="stylesheet" href="shower/themes/rndphp/styles/styles.css">
 </head>
 <body class="shower list">
-<section class="slide preview">
-    <div class="lines"></div>
-    <div class="stripes"></div>
-    <h1 style="
-    margin-bottom: 5px;
-    font-size: 42px;
-">Контракты пишем - код генерим</h1>
-    <h1 style="
-    margin-bottom: 5px;
-    font-size: 42px;
-">Как мы перестали CRUDошлепить</h1>
-    <p>Забанов Александр</p>
+<section class="slide">
+    <img src="pictures/preview.jpg" class=" cover"/>
 </section>
 
 <section class="slide">
@@ -26,8 +16,8 @@
     <h3>Забанов Александр</h3>
     <ul>
         <li>Руководитель направления Backend в комании Веб<span style="color:#7927e0">/</span>Практик</li>
-        <li>9+ лет в backend</li>
-        <li><b>PHP</b> : Bitrix, Laravel, Symfony, Yii2</li>
+        <li>10+ лет в backend</li>
+        <li><b>PHP</b> : Bitrix, Laravel, Symfony</li>
         <li><b>NodeJS</b> : Nest, Express</li>
         <li><b>Балуюсь</b> : Rust</li>
     </ul>
@@ -37,608 +27,837 @@
     <h2>План</h2>
     <ul>
         <li class="next">Зачем Contract First подход</li>
-        <li class="next">Как мы написали свою библиотеку для кодогенерации на Bitrix</li>
+        <li class="next">Проектирование контракта</li>
+        <li class="next">Валидация,согласованность и доступность контракта</li>
+        <li class="next">Имплементация контракта</li>
+        <li class="next">Выводы</li>
     </ul>
 </section>
 
 
 <section class="slide">
-    <h2>Contract First подход</h2>
-    <p>сначала создается контракт (машиночитаемый), а затем уже реализуется код
-    </p>
-    <img src="pictures/vjuh.png" class=" cover" style="
-    position: absolute;
-    width: 800px;
-    /* left: 777px; */
-    top: 335px;
-"/>
-    <p style="
-    position: absolute;
-    top: 500px;
-    left: 128px;
-    font-size: 15px;
-">* по версии некоторых пмов</p>
-</section>
-
-<section class="slide">
-    <h2 class="shout shrink">Как мы к нему пришли</h2>
-</section>
-
-<section class="slide">
-    <h2>Давным давно...</h2>
+    <h2>Ситуация</h2>
     <ul>
-        <li>Верстка формировалась на беке</li>
-        <li>“Контрактом” была устная договоренность</li>
-        <li>Конфликты (GIT) между фронтом и беком</li>
-        <li>Фронт должен знать <br>основы шаблонизаторов PHP FW</li>
+        <li class="next">Мы разрабатываем фичи в распределенной команде backend, frontend, mobile, qa</li>
+        <li class="next">Каждая новая фича почти всегда требует изменений в API.</li>
     </ul>
-    <img src="pictures/frontinback.png" class=" cover" style="
-    position: absolute;
-    width: 392px;
-    left: 777px;
-"/>
 </section>
 
-<section class="slide">
-    <h2>Шаблоны - blade</h2>
-    <img src="pictures/blade.png" class="cover" style="
-    width: 500px;
-"/>
-</section>
 
 <section class="slide">
-    <h2>Шаблоны - bitrix</h2>
-    <img src="pictures/bitrix.png" class="cover" style="
-    width: auto;
-"/>
-</section>
-
-<section class="slide">
-    <h2>Шаблоны - twig</h2>
-    <img src="pictures/twig.png" class="cover" style="
-    width: auto;
-"/>
-</section>
-
-<section class="slide">
-    <h2>Code First</h2>
+    <h2>Пример</h2>
+    <p><b>Задача:</b> "Добавить фильтр товаров по цвету"</p> 
+    <p><b>Неорганизованный подход:</b></p>    
     <ul>
-        <li><b>Общение по API</b></li>
+        <li class="next">BE пишет эндпоинт <span style="color:##0C755F;">/products?color=red</span></li>
+        <li class="next">FE по словам или чатику понимает структуру ответа</li>
+        <li class="next">Mobile смотрит на результат диалога в комментариях таск трекера </li>
+        <li class="next">Где-то в процессе появляются расхождения…</li>
     </ul>
-    <img src="pictures/backtofront.png" class=" cover" style="
-    position: absolute;
-    width: 392px;
-    left: 777px;
-"/>
+</section>
+
+
+<section class="slide">
+    <h2>Проблемы</h2> 
+    <ol>
+        <li class="next">Расхождение между реализацией и ожиданиями</li>
+        <li class="next">Одинаковую информацию приходится описывать 3 раза</li>
+        <li class="next">Невозможно синхронизировать разработку</li>
+        <li class="next">Нет автоматической проверять, что API соответствует контракту</li>
+        <li class="next">Документация устаревает за неделю</li>
+    </ol>
 </section>
 
 <section class="slide">
-    <h2>Code First</h2>
-    <ul>
-        <li>Общение по API</li>
-        <li><b>Точка истины - Контракт</b></li>
-    </ul>
-    <img src="pictures/swagger1.png" class=" cover" style="
-    position: absolute;
-    width: 392px;
-    left: 777px;
-"/>
-</section>
-
-<section class="slide">
-    <h2>Code First</h2>
-    <ul>
-        <li>Общение по API</li>
-        <li>Точка истины - Контракт
-            <ul>
-                <li><b>Генерируется на основе аннотаций</b></li>
-            </ul>
-        </li>
-    </ul>
-    <img src="pictures/anatation.png" class=" cover" style="
-    position: absolute;
-    width: 392px;
-    left: 777px;
-"/>
-</section>
-
-<section class="slide">
-    <h2>Code First</h2>
-    <ul>
-        <li>Общение по API</li>
-        <li>Точка истины - Контракт
-        </li>
-        <li><b>Фронт использует кодогенерации</b></li>
-    </ul>
-    <img src="pictures/frontgen.jpg" class=" cover" style="
-    position: absolute;
-    width: 340px;
-    left: 760px;
-"/>
-</section>
-
-<section class="slide">
-    <h2>Кодогенерация фронта - KUBB
-    </h2>
-    <img src="pictures/kubb.png" class=" cover" style="
-    width: 500px;
-    position: absolute;
-    left: 300px;
-    top: 211px;
-"/>
-    <img src="pictures/qrfront.png" class=" cover" style="
-    position: absolute;
-    width: 392px;
-    left: 777px;
-"/>
+    <h2>Вопрос</h2>
+    <span><i>"Каким образом можно сделать API единым, проверяемым, генерируемым и согласованным?"</i></span><br>
+    <span><b>А именно:</b></span>        
     <ul style="
-    margin-top: 260px;
+    font-size: 22px;
 ">
-        <li><a href="https://github.com/kubb-labs/kubb">https://github.com/kubb-labs/kubb</a></li>
-        <li><img src="pictures/kubbstar.png"></li>
-        <li>30% экономии времени</li>
+        <li class="next">API описывать один раз и в единственном месте</li>
+        <li class="next">консенсус между backend, frontend и mobile</li>
+        <li class="next">автоматически генерировать код  (dto, интерфейсы, типы и тд)</li>
+        <li class="next">тестировать не только бизнес-логику, но и соответствие контракту</li>
+        <li class="next">независимая разработка юнитов команд</li>
     </ul>
 </section>
 
-
 <section class="slide">
-    <h2>А чем хуже бек?</h2>
-    <h2 class="shout shrink">Генерация бека по контракту
-    </h2>
+    <h2>Ответ</h2>
+    <h2 class="shout shrink">Contract-First с автогенерацией кода</h2>
 </section>
 
-<!--section class="slide">
-    <h2>Что мы можем генерить из контракта на беке?</h2>
+<section class="slide">
+    <h2>Что такое Contract-First? </h2>
+    <p><b>Contract-First</b> - методология разработки, при которой формальная машиночитаемая спецификация API создаётся <b>ДО</b> написания имплементации.</p>    
+    </ul>
+</section>
+
+<section class="slide">
+    <h2>Сравнение Contract-first с Code-first</h2>
+    <p><b>Порядок работы:</b></p>    
     <ul>
-        <li class="next">контроллеры</li>
-        <li class="next">дто</li>
-        <li class="next">эксепшены</li>
-        <li class="next">роуты</li>
-        <li class="next">интерфейсы</li>
-        <li class="next">модели ???</li>
+        <li class="next"><b>Contract-first:</b> сначала создается спецификация - по ней генерируются каркасы кода.</li>
+        <li class="next"><b>Code-first:</b> сначала пишется код API - из него генерируется спецификация</li>
     </ul>
-</section-->
-
-<section class="slide">
-    <h2>Нужен контракт ДО</h2>
-    <img src="pictures/contrbefore.png" style="
-    width: 900px;
-"/>
 </section>
 
 <section class="slide">
-    <h2>Contract First</h2>
-    <table style="width: 900px;position: absolute;left: 150px;">
-        <thead>
-        <tr>
-            <th>Code First <span style="position: absolute;left: 427px;font-size: 62px;top: -49px;">→</span></th>
-            <th>Contract First</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>Контракт (например, OpenAPI) — первоисточник</td>
-            <td>Код (например, контроллеры) — первоисточник</td>
-        </tr>
-        <tr>
-            <td>На основе контракта генерируем или пишем код</td>
-            <td>На основе (бэкенд) кода генерируем контракт</td>
-        </tr>
-        </tbody>
-    </table>
-
-</section>
-
-<section class="slide">
-    <h2>Contract First позволяет</h2>
+    <h2>Сравнение Contract-first с Code-first</h2>
+    <p><b>Основа разработки:</b></p>    
     <ul>
-        <li class="next">Четкое и стабильное API-контракт (точка истины)</li>
-        <li class="next">Явное проектирование до реализации</li>
-        <li class="next">Возможность автоматической генерация кода</li>
-        <li class="next">Документация создается автоматически и всегда актуальна</li>
-        <li class="next">Контроль версионирования и изменений</li>
-        <li class="next">Автономная и параллельная разработка</li>
+        <li class="next"><b>Contract-first:</b> основной источник истины - контракт/спецификация</li>
+        <li class="next"><b>Code-first:</b> основной источник истины - код</li>
     </ul>
 </section>
 
 <section class="slide">
-    <h2>Минусы</h2>
+    <h2>Сравнение Contract-first с Code-first</h2>
+    <p><b>Инструменты генерации:</b></p>    
     <ul>
-        <li class="next">Без автоматизации остаются риски неконсистентности</li>
-        <li class="next">Не все любят писать контракты 🙃</li>
+        <li class="next"><b>Contract-first:</b> используется генерация кода (серверных заглушек, клиентов, моделей) из спецификации</li>
+        <li class="next"><b>Code-first:</b> используется генерация спецификации из аннотаций или кода</li>
     </ul>
 </section>
 
 <section class="slide">
-    <h2>Contract First</h2>
+    <h2>Сравнение Contract-first с Code-first</h2>
+    <p><b>Изменение API со временем:</b></p>    
     <ul>
-        <li>Общение по API</li>
-        <li>Первоочередно - Контракт
-            <ol>
-                <li><b>Пишется вручную</b></li>
-            </ol>
-        </li>
+        <li class="next"><b>Contract-first:</b> изменения в API начинаются со спецификации и затем переносятся в код</li>
+        <li class="next"><b>Code-first:</b> изменения в API отражаются через изменения в коде, а спецификация синхронизируется после</li>
     </ul>
-    <img src="pictures/yaml.png" class=" cover" style="
+</section>
+
+<section class="slide">
+    <h2 class="shout shrink">Проектирование контракта</h2>
+</section>
+
+<section class="slide">
+    <h2>Пример</h2>
+    <p><b>Наша команда:</b></p>    
+    <ul>
+        <li class="next">1 teamlead</li>
+        <li class="next">3 backend разработчика (PHP/Symfony)</li>
+        <li class="next">2 frontend разработчика (React)</li>
+        <li class="next">1 iOS разработчик</li>
+        <li class="next">1 Android разработчик</li>
+        <li class="next">0.5 QA</li>
+    </ul>
+</section>
+
+<section class="slide">
+    <h2>Стандарты спецификаций</h2>  
+    <ul>
+         <li class="next"><b>OpenAPI</b></li>
+         <li class="next">GraphQL SDL (Schema Definition Language)</li>
+         <li class="next">gRPC + Protocol Buffers (.proto)</li>
+         <li class="next">JSON:API / RESTful API спецификации</li>
+         <li class="next">RAML (RESTful API Modeling Language)</li>
+         <li class="next">API Blueprint</li>
+         <li class="next">и тд</li>
+    </ul>
+</section>
+
+<section class="slide">
+    <h2>OpenAPI 3.*</h2>
+    <p  style="
+    width: 50%;
+">OpenAPI Specification (OAS) - это стандарт описания RESTful API в машиночитаемом формате<br> (YAML или JSON)</p>
+
+    <img src="pictures/OpenAPI3.svg" style="
     position: absolute;
-    width: 392px;
-    left: 777px;
+    left: 513px;
+    top: -6px;
+    width: 50%;
 "/>
 </section>
 
 <section class="slide">
-    <h2>Contract First</h2>
+    <h2>OpenAPI 3 - Язык описания API</h2>
+    <p><b>Используем для:</b></p>    
     <ul>
-        <li>Общение по API</li>
-        <li>Первоочередно - Контракт
-            <ol>
-                <li>Пишется вручную</li>
-                <li><b>Генерим в GPT ;)</b></li>
-            </ol>
-        </li>
+        <li class="next">Описания структуры API </li>
+        <li class="next">Согласование с командой</li>
+        <li class="next">Документация требований</li>
     </ul>
-    <img src="pictures/gpt.png" class=" cover" style="
-    position: absolute;
-    width: 392px;
-    left: 777px;
-"/>
 </section>
 
 <section class="slide">
-    <h2>Contract First</h2>
+    <h2>GUI редакторы</h2>   
     <ul>
-        <li>Общение по API</li>
-        <li>Первоочередно - Контракт
-            <ol>
-                <li>Пишется вручную</li>
-                <li>Генерим в GPT ;)</li>
-            </ol>
-        </li>
-        <li><b>Контракт в отдельной репе</b></li>
+        <li class="next"><b>Swagger Editor</b></li> 
+        <li class="next">Stoplight Studio</li> 
+        <li class="next">Mermade</li> 
+        <li class="next">и тд</li>
     </ul>
-    <img src="pictures/repcont.png" class=" cover" style="
-    position: absolute;
-    width: 392px;
-    left: 777px;
-"/>
 </section>
 
 <section class="slide">
-    <h2>Contract First</h2>
+    <h2>Swagger Editor</h2>  
+    <p><b>Используем для:</b></p>      
     <ul>
-        <li>Общение по API</li>
-        <li>Первоочередно - Контракт
-        </li>
-        <li>Контракт в отдельной репе
-            <ol>
-                <li><b>Mock-сервер</b></li>
-            </ol>
-        </li>
+        <li class="next">Визуальное проектирование API</li>
+        <li class="next">Коллаборация всей команды</li>
     </ul>
-    <img src="pictures/prismexampl.png" class=" cover" style="
+        <img src="pictures/swaggereditor.png" style="
     position: absolute;
-    width: 450px;
-    left: 777px;
+    left: 513px;
+    top: -6px;
+    width: 50%;
 "/>
 </section>
 
 <section class="slide">
-    <h2>Mock-сервер - Prism </h2>
-    <p style="
-    font-size: 22px;
-"><b>Цель:</b> Убрать зависимость от тестовых площадок и бека
-    </p>
-    <img src="pictures/prism.png" style="
-    width: 370px;
-"/>
-    <p style="
-    position: absolute;
-    left: 432px;
-    top: 508px;
-    font-size: 22px;
-     color: #636060;
-"> Альтернативы: Mockoon, WireMock, MSW, Microrocks
-    </p>
-</section>
-
-<section class="slide">
-    <h2>Contract First</h2>
+    <h2>Workflow в команде (один из вариантов)</h2>
     <ul>
-        <li>Общение по API</li>
-        <li>Первоочередно - Контракт
-        </li>
-        <li>Контракт в отдельной репе
-            <ol>
-                <li>Mock-сервер</li>
-                <li><b>Валидаци контракта</b></li>
-            </ol>
-        </li>
+        <li class="next">Tech Lead создает структуру</li>
+        <li class="next">Backend добавляет эндпоинты</li>
+        <li class="next">Frontend и Mobile комментирует требования</li>
+        <li class="next">"Контракт"" готов?</li>
     </ul>
-    <img src="pictures/spectral.png" class=" cover" style="
-    position: absolute;
-    width: 392px;
-    left: 777px;
-"/>
 </section>
 
 <section class="slide">
-    <h2>Валидация - Spectral</h2>
-    <p style="
-    font-size: 18px;
-"><b>Цель:</b> Проверяет соответствие OpenAPI-документов спецификации и обеспечить единый стиль описания API</p>
-    <img src="pictures/spectr1.png" style="
-    width: 370px;
-"/>
-    <p style="
-    position: absolute;
-    left: 432px;
-    top: 408px;
-    font-size: 22px;
-     color: #636060;
-"> <b>Пример:</b> Проверка, чтобы все operationId были в стиле camelCase и уникальны
-    <p style="
-    font-size: 15px;
-    margin-top: -15px;
-">.spectral.yaml</p>
+    <h2 class="shout shrink">Валидация, согласованность и&nbsp;доступность контракта</h2>
 </section>
 
 <section class="slide">
-    <h2>Валидация - Spectral</h2>
-    <img src="pictures/spectr2.png" style="
-    width: 370px;
-"/>
-    <p style="
-    font-size: 15px;
-    margin: 0;
-">Результат:</p>
-    <p style="border: 1px solid; padding: 7px; font-size: 20px;"><span style="color: #ff0000;">3:7  error</span>  operationId <span style="color: #09ad00;">"Get_Pets"</span> должен быть в camelCase стиле  operation-operationId-camelCase</p>
-</section>
-
-<section class="slide">
-    <h2>Contract First</h2>
-    <ul>
-        <li>Общение по API</li>
-        <li>Первоочередно - Контракт
-        </li>
-        <li>Контракт в отдельной репе
-            <ol>
-                <li>Mock-сервер</li>
-                <li>Валидаци контракта</li>
-                <li><b>Тестирование контракта</b></li>
-            </ol>
-        </li>
-    </ul>
-    <img src="pictures/repcont.png" class=" cover" style="
-    position: absolute;
-    width: 392px;
-    left: 777px;
-"/>
-</section>
-
-<section class="slide">
-    <h2>TODO: Контрактные тесты - DREDD </h2>
-    <p style="
-    font-size: 18px;
-"><b>Цель:</b> Контроль соответствия между документацией и реализацией API</p>
-    <img src="pictures/dredd.png" style="
-    width: 500px;
-"/>
-</section>
-
-<section class="slide">
-    <h2>Contract First</h2>
-    <ul>
-        <li>Общение по API</li>
-        <li>Первоочередно - Контракт </li>
-        <li>Контракт в отдельной репе</li>
-        <li><b>Генерируем back, front, mock</b></li>
-    </ul>
-    <img src="pictures/mustgeneration.png" class=" cover" style="
-    position: absolute;
-    width: 392px;
-    left: 777px;
-"/>
-</section>
-
-
-<!--section class="slide">
-    <h2>Итого</h2>
-    <ul>
-        <li class="next">Решили использовать Contract First</li>
-        <li class="next">Хотим автоматизировать генерацию бекенда</li>
-    </ul>
-</section-->
-
-<section class="slide">
-    <h2  class="shout shrink">А где его взять, этот ваш кодогенератор бека?</h2>
-</section>
-
-<section class="slide">
-    <h2>Что мы хотим от генератора?</h2>
+    <h2>Контракт в отдельном репозитории</h2>  
+    <p><b>Дает нам:</b></p>   
     <ul>
         <li>
-            <span  class="next">Генерируй</span>
-            <ul  class="next" style="font-size: 16px;">
-                <img src="pictures/mustgen.png" class=" cover" style="
+            <img src="pictures/repocontr.png" style="
     position: absolute;
-    width: 323px;
-    left: 735px;
-    top: 261px;
+    left: 46px;
+    top: 202px;
+    width: 48%;
+    z-index: 1;
+"/></li>
+    </ul>   
+    <img src="pictures/singlrepo.png" style="
+    position: absolute;
+    left: 657px;
+    top: 143px;
+    width: 39%;
 "/>
-                <li>контроллеры</li>
-                <li>дто</li>
-                <li>эксепшены</li>
-                <li>роут</li>
-                <li>валидаци</li>
-                <li>модели ???</li>
-            </ul>
+</section>
+
+<section class="slide">
+    <h2>Соберем свой pipeline</h2>
+    <h2 class="shout shrink" style="
+    font-size: 62px;
+">Lint → Test → Build → Release → Notify</h2>
+</section>
+
+<section class="slide">
+    <h2 class="shout shrink">Lint</h2>
+</section>
+
+<section class="slide">
+    <h2>Spectral</h2>       
+    <ul style="
+    width: 50%;
+">
+        <li class="next">это линтер для проверки качества описаний API</li>
+        <li class="next">позволяет определять наборы правил (.spectral.yaml)
+
+<img src="pictures/spectral.svg" style="
+    position: absolute;
+    left: 517px;
+    top: 149px;
+    width: 50%;
+"/>
+
+<img src="pictures/spectral_arrow.png" style="
+    position: absolute;
+    left: 273px;
+    top: 309px;
+    /* width: 50%; */
+    width: 23%;
+"/>
+
         </li>
-        <li class="next">Ставься через composer</li>
-        <li class="next">Адаптирован под экосистему Bitrix</li>
     </ul>
 </section>
 
 <section class="slide">
-    <h2>Что есть из готового?</h2>
+    <h2>Примеры проверок</h2>
     <ul>
-        <li>OpenAPI Generator</li>
-        <ul>
-            <li>Генерирует 👍🏻</li>
-            <li style="
-    color: #bbb;
-">Ставится через composer 👎🏻</li>
-            <li style="
-    color: #bbb;
-">Адаптирован под экосистему Bitrix 👎🏻</li>
-        </ul>
+        <li class="next">❌ operation-operationId: Missing operationId</li>
+        <li class="next">❌ operation-tags: Must have at least one tag</li>
+        <li class="next">⚠️ operation-description: Should have description</li>
+        <li class="next">✅ All checks passed!</li>
     </ul>
-    <img src="pictures/openapigen.png" class=" cover" style="
+</section>
+
+<section class="slide">
+    <h2>Spectral </h2>  
+    <p><b>Используем при:</b></p>      
+    <ul>
+        <li class="next">Валидации спецификации перед merge</li>
+        <li class="next">CI/CD автопроверки</li>
+    </ul>
+</section>
+
+<section class="slide">
+    <h2 class="shout shrink">Test</h2>
+</section>
+
+<section class="slide">
+    <h2>Dredd</h2>  
+    <p style="
+    width: 50%;
+">Утилита для автоматического интеграционного тестировани API серверов использующих OpenAPI</p>     
+        <img src="pictures/dredd.png" style="
     position: absolute;
-    width: 509px;
-    left: 735px;
-    top: 210px;
+    left: 477px;
+    top: 146px;
+    width: 50%;
 "/>
 </section>
 
 <section class="slide">
-    <h2>Что есть из готового?</h2>
+    <h2>Dredd</h2>  
+    <p><b>Проверяет что:</b></p>      
     <ul>
-        <li>OpenAPI Generator</li>
-        <li><b>Jane</b>
+        <li class="next">Все эндпоинты доступны</li>
+        <li class="next">Responses соответствуют схемам</li>
+        <li class="next">Status codes корректны</li>
+        <li class="next">Headers правильные</li>
+    </ul>
+        <img src="pictures/dredd_result.svg" style="
+    position: absolute;
+    left: 477px;
+    top: 146px;
+    width: 50%;
+"/>
+</section>
+
+<section class="slide">
+    <h2>Schemathesis</h2>  
+    <p style="
+    width: 50%;
+">property-based тестирование<br> для API схем</p>      
+    
+        <img src="pictures/schemathesis.gif" style="
+    position: absolute;
+    left: 502px;
+    top: 51px;
+    width: 50%;
+
+"/>
+</section>
+
+<section class="slide">
+    <h2>Schemathesis</h2>  
+    <p><b>Функции:</b></p>      
+    <ul>
+        <li class="next">Нагрузочное тестирование</li>
+        <li class="next">Поиск edge cases  </li>
+        <li class="next">Security testing</li>
+    </ul>
+</section>
+
+<section class="slide">
+    <h2>Сравнение Schemathesis vs Dredd</h2>  
+    <img src="pictures/dreddvsch.png" style="
+    position: absolute;
+    left: 102px;
+    width: 77%;
+"/>
+</section>
+
+<section class="slide">
+    <h2 class="shout shrink">Build</h2>
+</section>
+
+<section class="slide">
+    <h2>Mock-сервер</h2>      
+    <ul>
+        <li class="next"><b>Prism</b></li>
+        <li class="next">Mockoon</li>
+        <li class="next">WireMock</li>
+        <li class="next">MSW</li>
+        <li class="next">Microrocks</li>
+    </ul>
+</section>
+
+<section class="slide">
+    <h2>Prism</h2>      
+    <ul>
+        <li class="next"><img src="pictures/bashprism.svg" style="
+    position: absolute;
+    left: 56px;
+    width: 52%;
+    z-index: 100;
+    "/></li>       
+        <li class="next">
+            <img src="pictures/jsonprism.svg" style="
+    position: absolute;
+    left: 646px;
+    width: 37%;
+    top: 0px;
+"/>
+            <img src="pictures/spectral_arrow.png" style="
+    position: absolute;
+    left: 331px;
+    width: 30%;
+    top: 135px;
+
+"/>
+</li>
+    </ul>
+</section>
+
+<section class="slide">
+    <h2 class="shout shrink">Release</h2> 
+</section>
+
+<section class="slide">
+    <h2>Интерактивная документация</h2>      
+    <img src="pictures/redoc.png" style="
+    position: absolute;
+    left: 51px;
+    width: 95%;
+    top: 103px;
+    "/>
+</section>
+
+<section class="slide">
+    <h2>ReDoc</h2>      
+    <p><b>Что получаем:</b></p>
+    <ul>
+        <li class="next">Удобный интерфей</li>
+        <li class="next">Поиск по эндпоинтам</li>
+        <li class="next">Готовые примеры (curl, PHP, JS)</li>
+        <li class="next">Try-it-out функция</li>
+        <li class="next">Автообновление</li>
+    </ul>
+</section>
+
+<section class="slide">
+    <h2 class="shout shrink">Notify</h2>
+</section>
+
+<section class="slide">
+    <h2>Уведомление команды</h2>      
+    <p><b>Варианты:</b></p>
+    <ul>
+        <li class="next"><b>Telegram bot</b></li>
+        <li class="next">Mattermost / Teams</li>
+        <li class="next">GitHub\GitLab Notifications</li>
+        <li class="next">Email</li>
+        <li class="next">и тд</li>
+    </ul>
+</section>
+
+<section class="slide">
+    <h2>n8n и Telegram bot</h2>      
+    <img src="pictures/n8n.png" style="
+    position: absolute;
+    left: 50px;
+    width: 53%;
+    top: 103px;
+    
+    "/>    
+    <img src="pictures/n8ntg.png" style="
+    position: absolute;
+    left: 676px;
+    width: 34%;
+    top: 0px;
+    
+    "/>
+    <img src="pictures/spectral_arrow.png" style="
+    position: absolute;
+    left: 593px;
+    width: 8%;
+    top: 292px;
+"/>
+</section>
+
+<section class="slide">
+    <h2>Спецификация готова</h2>      
+    <p><b>Что получили:</b></p>
+    <ul>
+        <li class="next">линтинг</li>
+        <li class="next">тесты контракта</li>
+        <li class="next">мок-сервер</li>
+        <li class="next">публикация docs</li>
+        <li class="next">команда уведомлена</li>
+    </ul>
+</section>
+
+<section class="slide">
+    <h2 class="shout shrink">Имплементация контракта</h2>
+</section>
+
+<section class="slide">
+    <h2>Важно</h2>
+    <h2 class="shout shrink" style="
+    font-family: Courier New;
+    font-size: 22px;
+">⚠️ перед запуском генераций необходимо обеспечить актуальность контракта</h2>
+</section>
+
+<section class="slide">
+    <h2>Kubb — Генерация на фронте</h2>      
+    <p style="
+    width: 70%;
+"><b>Инструмент, который автоматически генерирует код для общения с вашим backend-API</b></p>   
+    <img src="pictures/kubb.png" style="
+    position: absolute;
+    left: 50px;
+    width: 53%;
+    top: 249px;
+    "/>    
+    <img src="pictures/kubbresult.png" style="
+    position: absolute;
+    left: 727px;
+    width: 29%;
+    top: 0px;
+    "/>
+    <img src="pictures/spectral_arrow.png" style="
+    position: absolute;
+    left: 594px;
+    width: 13%;
+    top: 264px;
+"/>
+</section>
+
+<section class="slide">
+    <h2>OpenAPI Generator — Фреймворк для генерации бека</h2>
+    <p>Предоставляет несколько инструментов для работы со спецификацией OpenAPI</p>   
+     <img src="pictures/openapigen.png" style="
+    position: absolute;
+    left: 0px;
+    width: 100%;
+    top: 314px;
+
+"/>
+</section>
+
+
+<section class="slide">
+    <h2 >OpenAPI Generator</h2>
+    <h2 class="shout shrink">контракт   →  php код</h2>
+</section>
+
+<section class="slide">
+    <h2>OpenAPI Generator - конфиг</h2>  
+     <img src="pictures/openapiconf.png" style="
+    position: absolute;
+    left: 316px;
+    width: 39%;
+    /* top: 314px; */
+"/>
+</section>
+
+<section class="slide">
+    <h2>OpenAPI Generator - PHP-конфиг</h2> 
+     <img src="pictures/openapiconfphp.png" style="
+    position: absolute;
+    left: 316px;
+    width: 39%;
+    /* top: 314px; */
+"/>
+</section>
+
+<section class="slide">
+    <h2>Структура проекта</h2>
+    <ul>
+        <li>🚫 - ТОЛЬКО АВТОГЕНЕРАЦИЯ</li>
+        <li>✅ - РУЧНАЯ РАЗРАБОТКА</li>
+    </ul>
+     <img src="pictures/structure.png" style="
+    position: absolute;
+    left: 625px;
+    width: 39%;
+    top: 0px;
+    z-index: 1;
+"/>
+</section>
+
+<section class="slide">
+    <h2>OpenAPI Generator - Сущности</h2> 
+     <img src="pictures/entity.png" style="
+    position: absolute;
+    left: 649px;
+    width: 37%;
+    top: 0px;
+    /* z-index: 1; */
+
+"/>
+</section>
+
+<section class="slide">
+    <h2>OpenAPI Generator - Контроллер</h2> 
+     <img src="pictures/controller.png " style="
+    position: absolute;
+    left: 748px;
+    width: 27%;
+    top: 0px;
+    /* z-index: 1; */
+"/>
+</section>
+
+<section class="slide">
+    <h2>OpenAPI Generator - Контроллер</h2> 
+    <ol>
+        <li>Используем operationId</li>
+    </ol>
+     <img src="pictures/contr1.png " style="
+    position: absolute;
+    left: 594px;
+    width: 42%;
+    top: 0px;
+    /* z-index: 1; */
+
+"/>
+</section>
+
+<section class="slide">
+    <h2>OpenAPI Generator - Контроллер</h2>
+    <ol>
+        <li>Используем operationId</li>
+        <li>Добавляем openapi-server/Resources/config/routing.yaml</li>
+    </ol>
+     <img src="pictures/contr2.png " style="
+    position: absolute;
+    /* left: 594px; */
+    width: 50%;
+    top: 263px;
+    /* z-index: 1; */
+"/>
+</section>
+
+<section class="slide">
+    <h2>OpenAPI Generator - Контроллер</h2> 
+    <ol>
+        <li>Используем operationId</li>
+        <li>Добавляем …/routing.yaml</li>
+        <li>Хендлер подхватывает метод</li>
+    </ol>
+     <img src="pictures/contr3.png " style="
+    position: absolute;
+    left: 595px;
+    width: 42%;
+    top: 143px;
+    /* z-index: 1; */
+"/>
+</section>
+
+<section class="slide">
+    <h2>OpenAPI Generator - Контроллер</h2> 
+    <ol>
+        <li>Используем operationId</li>
+        <li>Добавляем …/routing.yaml</li>
+        <li>Хендлер подхватывает метод</li>
+        <li>Логику пишем в сервис</li>
+    </ol>
+     <img src="pictures/contr4.png" style="
+    position: absolute;
+    left: 524px;
+    width: 49%;
+    top: 143px;
+    /* z-index: 1; */
+"/>
+</section>
+
+<section class="slide">
+    <h2>OpenAPI Generator - Request</h2>
+    <p><b>Преимущества подхода с Request/Response:</b></p>
+    <ul>
+        <li class="next">Типобезопасность </li>
+        <li class="next">Валидация </li>
+        <li class="next">Сепарация </li>
+        <li class="next">Сериализация </li>
+        <li class="next">Переиспользование  </li>
+        <li class="next">Тестируемость  </li>
+    </ul>
+     <img src="pictures/req.png" style="
+    position: absolute;
+    left: 594px;
+    width: 42%;
+    top: 153px;
+    /* z-index: 1; */
+"/>
+</section>
+
+<section class="slide">
+    <h2>OpenAPI Generator - Responce </h2>
+    <p><b>Преимущества подхода с Request/Response:</b></p>
+    <ul>
+        <li>Типобезопасность </li>
+        <li>Валидация </li>
+        <li>Сепарация </li>
+        <li>Сериализация </li>
+        <li>Переиспользование  </li>
+        <li>Тестируемость  </li>
+    </ul>
+     <img src="pictures/res.png" style="
+    position: absolute;
+    left: 696px;
+    width: 32%;
+    top: 0px;
+    /* z-index: 1; */
+"/>
+</section>
+
+<section class="slide">
+    <h2>OpenAPI Generator против AI</h2>
+    <ul>
+        <li class="next">Детерминизм и предсказуемость </li>
+        <li class="next">Скорость </li>
+        <li class="next">Консистентность кода </li>
+        <li class="next">Цена </li>
+    </ul>
+</section>
+
+<section class="slide">
+    <h2>OpenAPI Generator против AI</h2>
+    <p>Обеспечивает:</p>
+    <ul>
+        <li class="next">Автоматическую валидацию</li>
+        <li class="next">Автогенерация CRUD</li>
+    </ul>
+</section>
+
+<section class="slide">
+    <h2>league/openapi-psr7-validator — Runtime валидация</h2>
+    <p>Библиотека, которая проверяет, соответствуют ли ваши PSR-7 запросы и ответы тому, что описано в вашем OpenAPI-документе</p>
+     <img src="pictures/league.png" style="
+    position: absolute;
+    left: 100px;
+    width: 80%;
+    top: 222px;
+"/>
+</section>
+
+<section class="slide">
+    <h2>league/openapi-psr7-validator — Runtime валидация</h2>
+    <p>Пример 1: Интеграция с Middleware (PSR-15)</p>
+     <img src="pictures/leg1.png" style="
+    position: absolute;
+    left: 645px;
+    width: 38%;
+    top: 147px;
+"/>
+</section>
+
+<section class="slide">
+    <h2>league/openapi-psr7-validator — Runtime валидация</h2>
+    <p>Пример 2: Валидация в тестах</p>
+     <img src="pictures/leg2.png" style="
+    position: absolute;
+    left: 625px;
+    width: 39%;
+    top: 147px;
+"/>
+</section>
+
+<section class="slide">
+    <h2>OpenAPI Generator против AI</h2>
+    <p>Использовуем в:</p>
+    <ul>
+        <li class="next">Middleware автовалидации запросов</li>
+        <li class="next">Проверка ответов в dev/staging </li>
+        <li class="next">Мониторинг нарушений контракта</li>
+    </ul>
+</section>
+
+<section class="slide">
+    <h2 class="shout shrink">Что мы получили</h2>
+</section>
+
+<section class="slide">
+    <h2>Преимущества методологии</h2>
+    <p>Ключевые преимущества:</p>
+    <ul>
+        <li class="next">Детерминированность разработки</li>
+        <li class="next">Ранняя валидация архитектуры</li>
+        <li class="next">Автоматизация процессов</li>
+        <li class="next">Масштабируемость команды</li>
+    </ul>
+</section>
+
+<section class="slide">
+    <h2>Когда подход избыточне</h2>
+    <ul>
+        <li class="next">MVP</li>
+        <li class="next">Статичные старницы</li>
+        <li class="next">"Луддиты" + сжатые сроки</li>
+    </ul>
+</section>
+
+<section class="slide">
+    <h2>Технологический стек</h2>
+
+            <p>Спецификация:</p>
             <ul>
-                <li style="color: #bbb;">Генерирует только клиентскую часть 👎🏻</li>
-                <li>Ставится через composer 👍🏻</li>
-                <li style="color: #bbb;">Адаптирован под экосистему Bitrix 👎🏻</li>
+                <li>OpenAPI 3.0 — стандарт описания REST API</li>
+                <li>Swagger Editor  — визуальный редактор спецификаций</li>
+                <li>Spectral — линтер для соблюдения стандартов</li>
             </ul>
-        </li>
-    </ul>
-    <img src="pictures/janephp.png" class=" cover" style="
-    position: absolute;
-    width: 381px;
-    left: 808px;
-    top: 311px;
-"/>
+       
 </section>
 
 <section class="slide">
-    <h2>Что есть из готового?</h2>
-    <ul>
-        <li>OpenAPI Generator</li>
-        <li>Jane</li>
-        <li><b>ИИ</b></li>
-    </ul>
-    <img src="pictures/vibecoding.png" class=" cover" style="
-    position: absolute;
-    width: 406px;
-    left: 689px;
-    top: 323px;
-"/>
+    <h2>Технологический стек</h2>
+
+            <p>Генерация кода:</p>
+            <ul>
+                <li>OpenAPI Generator — генерация PHP моделей и интерфейсов</li>
+            </ul>
+        
 </section>
 
 <section class="slide">
-    <h2>Придется писать свое</h2>
-    <img src="pictures/ouropen.png" style="
-    width: 510px;
-"/>
+    <h2>Технологический стек</h2>
+  
+
+            <p>Валидация:</p>
+            <ul>
+                <li>league/openapi-psr7-validator — runtime валидация в PHP</li>
+            </ul>
+       
 </section>
 
 <section class="slide">
-    <h2  class="shout shrink">С какими проблемами мы столкнулись</h2>
-</section>
+    <h2>Технологический стек</h2>
 
-<section class="slide">
-    <h2>Проблема: Отсутствие готовых решение</h2>
-    <ul>
-        <li>Небольшой выбор библиотек на PHP</li>
-        <li>Для Bitrix таких 0</li>
-    </ul>
-</section>
-
-<section class="slide">
-    <h2>Проблема: Как избежать правок сгенерированного кода и куда прятать бизнес-логику</h2>
-    <ul>
-        <li class="next">Как не перезаписывать сгенерированный код?</li>
-        <li class="next">Как подружить с модульным монолитом?</li>
-        <li class="next">Генерировать модул<b>И</b> на основе контракта?</li>
-    </ul>
-</section>
-
-
-<section class="slide">
-    <h2>Решение - схема</h2>
-    <img src="pictures/serviceLocator.png" class="cover" style="
-    width: 650px;
-"/>
-</section>
-
-<section class="slide">
-    <h2>Решение - структура</h2>
-    <img src="pictures/structure.png" style="
-    width: 480px;
-"/>
-</section>
-
-<section class="slide">
-    <h2>Проблема: Формат ответа: JSON и Bitrix-структура</h2>
-    <img src="pictures/formatbitrix.png" style="
-    width: 510px;
-"/>
+            <p>Тестирование:</p>
+            <ul>
+                <li>Dredd — автоматические contract tests</li>
+                <li>Schemathesis — property-based testing API</li>
+            </ul>
 
 </section>
 
 <section class="slide">
-    <h2>Итого: Наш опенсорс генератор бэкенда для Bitrix по OpenAPI</h2>
-    <ul>
-        <li>Основан на jane-php</li>
-        <li>Генерирует структуру</li>
-        <li>Устраняет рутинное написание кода.</li>
-        <li>Гарантирует соответствие API контракту.</li>
-        <li>Сделан под экосистему Bitrix</li>
-        <li>Быстрая установка</li>
-    </ul>
-</section>
+    <h2>Технологический стек</h2>
 
-<section class="slide" style="text-align: center;">
-    <img src="pictures/qr-code.png" style="
-    width: 450px;
-"/>
-    <p><a href="https://github.com/webpractik/bitrixapigen"> https://github.com/webpractik/bitrixapigen</a></p>
+            <p>Mock & Документация:</p>
+            <ul>
+                <li>Prism — mock-сервер из спецификации</li>
+                <li>ReDoc — интерактивная документация</li>
+            </ul>
+
+
 </section>
 
 <section class="slide">
-    <h2>Авторы пакета</h2>
-    <ul>
-        <li>Петр Кленкин</li>
-        <li>Евгений Зорькин</li>
-        <li>Александр Забанов</li>
-    </ul>
+    <h2 class="shout shrink">Вопросы</h2>
 </section>
 
 <section class="slide">
-    <!--h2 class="shout shrink">Вопросы?</h2-->
-    <img src="pictures/questions.png" class="cover" style="
-    width: auto;
-"/>
-</section>
-
-<section class="slide">
-    <pre style="line-height: 1; font-size: 19px; font-weight: bold; color: #2e3191; font-family: monospace;"
-         class="place">
- ______  __                                        __
-/\__  _\/\ \                                      /\ \
-\/_/\ \/\ \ \___       __          __     ___     \_\ \
-   \ \ \ \ \  _ `\   /'__`\      /'__`\ /' _ `\   /'_` \
-    \ \ \ \ \ \ \ \ /\  __/     /\  __/ /\ \/\ \ /\ \L\ \
-     \ \_\ \ \_\ \_\\ \____\    \ \____\\ \_\ \_\\ \___,_\
-      \/_/  \/_/\/_/ \/____/     \/____/ \/_/\/_/ \/__,_ /
-
-    </pre>
+    <h2 class="shout shrink">Конец</h2>
 </section>
 
 <div class="progress"></div>
 
 <script src="shower/shower.min.js"></script>
-<!-- Copyright © 3000 Yours Truly, Famous Inc. -->
 
 </body>
 </html>
